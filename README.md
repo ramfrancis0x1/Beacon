@@ -183,55 +183,151 @@ leader-sam/
 └── README.md               # This file
 ```
 
-## 🧪 Testing
+## 🧪 Testing & Validation
 
-### Quick Test (Recommended)
+### 🚀 Quick Test (Recommended)
 ```bash
-# Run all tests in the correct order
+# Run complete test suite in the correct order
 ./run_tests.sh
 ```
+**This automated script:**
+- ✅ Validates environment variables
+- ✅ Runs all tests in dependency order
+- ✅ Stops on first failure with helpful error messages
+- ✅ Provides comprehensive success summary
+- ✅ Offers optional full integration test
 
-### Manual Testing Order
+### 🔧 Manual Testing (When Debugging)
 
-When making changes, run tests in this specific order:
+When making changes, run tests in this **specific order**:
 
 #### **1. Basic Linear API Test**
 ```bash
 python test_linear.py
 ```
-- Tests core Linear API connectivity and authentication
-- Validates team access and workflow states
-- **Must pass first** before proceeding
+**What it tests:**
+- Linear API authentication and connectivity
+- Team discovery and access permissions
+- Workflow state retrieval
+- Basic issue creation and retrieval
+- API response handling and error detection
+
+**Expected output:**
+```
+✅ Authentication successful!
+✅ Found 1 teams: Bueller (Key: BUE)
+✅ Issue created successfully! (BUE-XX)
+🎉 All tests passed successfully!
+```
+
+**Must pass first** - other tests depend on this connectivity.
 
 #### **2. Enhanced Function Test**
 ```bash
 python test_linear_function.py
 ```
-- Tests enhanced issue creation with contacts/attachments
-- Validates AI-powered title generation
-- Tests the specific function used by main.py
+**What it tests:**
+- Enhanced issue creation with contacts/attachments
+- AI-powered title generation (if OpenAI configured)
+- Complete SAM.gov data extraction and formatting
+- Rich markdown description generation
+- Contact information parsing and display
+
+**Expected output:**
+```
+🤖 AI generated title: 'Analyze 5.56mm NATO Ammo Capabilities - SOCOM'
+✅ Created Linear issue BUE-XX with AI-powered title
+🎉 Complete AI + Linear integration working correctly!
+```
 
 #### **3. Content Verification Test**
 ```bash
 python verify_enhanced_issue.py
 ```
-- Verifies created issues contain all enhanced features
-- Provides enhancement score (9/9 is perfect)
-- Final validation step
+**What it tests:**
+- Issue content contains all expected sections
+- Contact information properly formatted
+- Attachments and links correctly parsed
+- Enhancement scoring (9/9 = perfect)
+
+**Expected output:**
+```
+📞 Contact Information: ✅ All sections present
+📎 Attachments & Links: ✅ All sections present
+🎯 Enhancement Score: 9/9
+🎉 EXCELLENT! Comprehensive contact and attachment information
+```
 
 #### **4. Full Integration Test (Optional)**
 ```bash
-# Only if you have SAM.gov API access
+# Only if you have SAM.gov API credentials
+export API_KEY="your_sam_api_key"
+export API_URL="https://api.sam.gov/opportunities/v2/search"
 python main.py
-# Press Ctrl+C after seeing successful scan
+```
+**What it tests:**
+- Complete SAM.gov API integration
+- Real opportunity detection and processing
+- End-to-end Linear issue creation
+- Continuous monitoring loop
+
+**Press Ctrl+C after seeing successful scan**
+
+### 📊 Test Results Interpretation
+
+| Result | Meaning | Next Steps |
+|--------|---------|------------|
+| 🎉 **ALL TESTS PASSED** | System ready for production | Deploy with confidence |
+| ❌ **Test 1 Failed** | Linear API connectivity issues | Check credentials, network, permissions |
+| ❌ **Test 2 Failed** | Enhanced function problems | Review contact/attachment parsing logic |
+| ❌ **Test 3 Failed** | Issue content missing features | Check description formatting |
+
+### 🔍 Test Coverage
+
+The test suite validates:
+- **Authentication**: All API credentials and permissions
+- **Core Functions**: Basic Linear operations (create, read, update)
+- **Enhanced Features**: Contact extraction, attachment parsing, AI titles
+- **Error Handling**: Graceful failure and recovery scenarios  
+- **End-to-End**: Complete workflow from SAM.gov to Linear
+
+### ⚠️ Testing Prerequisites
+
+**Required Environment Variables:**
+```bash
+export LINEAR_API_KEY="lin_oauth_your_token"
+export LINEAR_TEAM_ID="your_team_id"
 ```
 
-### Environment Validation
-The script automatically validates required environment variables on startup and provides helpful error messages.
+**Optional (but recommended):**
+```bash
+export OPENAI_API_KEY="sk-your_openai_key"  # For AI titles
+export API_KEY="your_sam_key"               # For full integration test
+export API_URL="https://api.sam.gov/..."    # For full integration test  
+```
 
-### Test Results
-- **All Green**: System ready for production
-- **Any Red**: Fix the failing component before proceeding to next test
+### 🚨 Common Test Failures
+
+**"LINEAR_API_KEY not set"**
+```bash
+# Fix: Set your Linear OAuth token
+export LINEAR_API_KEY="lin_oauth_your_linear_oauth_token"
+```
+
+**"Linear API request failed with status 401"**
+- Token expired or invalid
+- Insufficient permissions
+- Team ID doesn't match accessible teams
+
+**"Enhancement Score: 5/9"** 
+- Issue missing contact information
+- Attachments not properly parsed
+- Description formatting issues
+
+**"OpenAI API errors"**
+- API key invalid or quota exceeded
+- Network connectivity issues
+- Model availability problems (script continues with fallback titles)
 
 ## 🛠 Troubleshooting
 
