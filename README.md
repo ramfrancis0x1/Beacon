@@ -65,6 +65,23 @@ export LINEAR_TEAM_ID="your_linear_team_id"
 export OPENAI_API_KEY="sk-your_openai_api_key"
 ```
 
+**Quick Setup:**
+```bash
+# Copy the example environment file
+cp env.example .env
+
+# Edit .env with your actual API keys
+nano .env
+
+# Source the environment variables
+source .env
+```
+
+**Getting API Keys:**
+- **SAM.gov**: Register at [sam.gov](https://sam.gov) and request API access
+- **Linear**: Go to Linear app → Settings → API → Create OAuth Token  
+- **OpenAI**: Sign up at [platform.openai.com](https://platform.openai.com) and generate an API key
+
 ### Running the Monitor
 
 ```bash
@@ -158,6 +175,8 @@ leader-sam/
 ├── test_linear.py            # Linear API test suite
 ├── test_linear_function.py   # Standalone Linear integration test
 ├── verify_enhanced_issue.py  # Issue content verification
+├── run_tests.sh              # Complete test runner script
+├── env.example               # Environment variables template
 ├── requirements.txt          # Python dependencies
 ├── .gitignore               # Git ignore rules
 ├── sam_monitor.log          # Runtime logs (auto-generated)
@@ -166,20 +185,53 @@ leader-sam/
 
 ## 🧪 Testing
 
-### Test Linear Integration
+### Quick Test (Recommended)
 ```bash
-# Test Linear API connectivity and issue creation
+# Run all tests in the correct order
+./run_tests.sh
+```
+
+### Manual Testing Order
+
+When making changes, run tests in this specific order:
+
+#### **1. Basic Linear API Test**
+```bash
 python test_linear.py
+```
+- Tests core Linear API connectivity and authentication
+- Validates team access and workflow states
+- **Must pass first** before proceeding
 
-# Test the specific issue creation function
+#### **2. Enhanced Function Test**
+```bash
 python test_linear_function.py
+```
+- Tests enhanced issue creation with contacts/attachments
+- Validates AI-powered title generation
+- Tests the specific function used by main.py
 
-# Verify enhanced contact/attachment features
+#### **3. Content Verification Test**
+```bash
 python verify_enhanced_issue.py
+```
+- Verifies created issues contain all enhanced features
+- Provides enhancement score (9/9 is perfect)
+- Final validation step
+
+#### **4. Full Integration Test (Optional)**
+```bash
+# Only if you have SAM.gov API access
+python main.py
+# Press Ctrl+C after seeing successful scan
 ```
 
 ### Environment Validation
 The script automatically validates required environment variables on startup and provides helpful error messages.
+
+### Test Results
+- **All Green**: System ready for production
+- **Any Red**: Fix the failing component before proceeding to next test
 
 ## 🛠 Troubleshooting
 
