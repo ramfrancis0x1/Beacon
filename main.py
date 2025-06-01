@@ -192,6 +192,16 @@ def create_linear_issue_for_listing(listing):
         ui_link = listing.get('uiLink', 'No link available')
         uid = listing.get('noticeId') or listing.get('solicitationNumber')
         
+        # Extract contact information
+        contacts = listing.get('pointOfContact', [])
+        primary_contact = listing.get('primaryContact', {})
+        office_contact = listing.get('officeContact', {})
+        
+        # Extract attachments and additional links
+        attachments = listing.get('attachments', [])
+        additional_info_link = listing.get('additionalInfoLink', '')
+        links = listing.get('links', [])
+        
         # Format address info
         office_location = f"{office_address.get('city', 'Unknown')}, {office_address.get('state', 'Unknown')}"
         performance_location = "Unknown location"
@@ -200,6 +210,93 @@ def create_linear_issue_for_listing(listing):
             state_info = place_of_performance.get('state', {})
             if isinstance(city_info, dict) and isinstance(state_info, dict):
                 performance_location = f"{city_info.get('name', 'Unknown')}, {state_info.get('name', 'Unknown')}"
+        
+        # Format contact information
+        contact_section = ""
+        
+        # Primary contact
+        if primary_contact:
+            contact_section += "### Primary Contact\n"
+            if primary_contact.get('fullName'):
+                contact_section += f"- **Name**: {primary_contact['fullName']}\n"
+            if primary_contact.get('title'):
+                contact_section += f"- **Title**: {primary_contact['title']}\n"
+            if primary_contact.get('email'):
+                contact_section += f"- **Email**: {primary_contact['email']}\n"
+            if primary_contact.get('phone'):
+                contact_section += f"- **Phone**: {primary_contact['phone']}\n"
+            contact_section += "\n"
+        
+        # Office contact
+        if office_contact:
+            contact_section += "### Office Contact\n"
+            if office_contact.get('fullName'):
+                contact_section += f"- **Name**: {office_contact['fullName']}\n"
+            if office_contact.get('title'):
+                contact_section += f"- **Title**: {office_contact['title']}\n"
+            if office_contact.get('email'):
+                contact_section += f"- **Email**: {office_contact['email']}\n"
+            if office_contact.get('phone'):
+                contact_section += f"- **Phone**: {office_contact['phone']}\n"
+            contact_section += "\n"
+        
+        # Additional contacts
+        if contacts and isinstance(contacts, list):
+            for i, contact in enumerate(contacts):
+                if isinstance(contact, dict):
+                    contact_section += f"### Contact {i+1}\n"
+                    if contact.get('fullName'):
+                        contact_section += f"- **Name**: {contact['fullName']}\n"
+                    if contact.get('title'):
+                        contact_section += f"- **Title**: {contact['title']}\n"
+                    if contact.get('email'):
+                        contact_section += f"- **Email**: {contact['email']}\n"
+                    if contact.get('phone'):
+                        contact_section += f"- **Phone**: {contact['phone']}\n"
+                    contact_section += "\n"
+        
+        if not contact_section:
+            contact_section = "No contact information available\n\n"
+        
+        # Format attachments and links
+        attachments_section = ""
+        
+        # Attachments
+        if attachments and isinstance(attachments, list):
+            attachments_section += "### Documents & Attachments\n"
+            for attachment in attachments:
+                if isinstance(attachment, dict):
+                    name = attachment.get('name', attachment.get('filename', 'Unnamed attachment'))
+                    url = attachment.get('url', attachment.get('link', ''))
+                    description = attachment.get('description', '')
+                    
+                    attachments_section += f"- **{name}**"
+                    if description:
+                        attachments_section += f" - {description}"
+                    if url:
+                        attachments_section += f"\n  - Link: {url}"
+                    attachments_section += "\n"
+            attachments_section += "\n"
+        
+        # Additional information link
+        if additional_info_link:
+            attachments_section += f"### Additional Information\n- {additional_info_link}\n\n"
+        
+        # Other links
+        if links and isinstance(links, list):
+            attachments_section += "### Related Links\n"
+            for link in links:
+                if isinstance(link, dict):
+                    name = link.get('name', link.get('title', 'Link'))
+                    url = link.get('url', link.get('href', ''))
+                    if url:
+                        attachments_section += f"- [{name}]({url})\n"
+                elif isinstance(link, str):
+                    attachments_section += f"- {link}\n"
+            attachments_section += "\n"
+        
+        if not attachments_section:
+            attachments_section = "No attachments or additional links available\n\n"
         
         # Create Linear issue title using AI
         logger.info("🤖 Generating AI-powered issue title...")
@@ -226,11 +323,18 @@ def create_linear_issue_for_listing(listing):
 - **Office Location**: {office_location}
 - **Performance Location**: {performance_location}
 
-## 🔗 Links
-- **SAM.gov Link**: {ui_link}
+## 👥 Contacts
+{contact_section}
+
+## 📎 Attachments & Links
+{attachments_section}
+
+## 🔗 SAM.gov Links
+- **Opportunity Page**: {ui_link}
 
 ## 📝 Next Steps
 - [ ] Review opportunity details
+- [ ] Contact primary POC for clarification
 - [ ] Assess capability match
 - [ ] Determine bid/no-bid decision
 - [ ] Prepare response if pursuing
